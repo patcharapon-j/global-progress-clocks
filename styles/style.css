@@ -106,7 +106,9 @@ body:has(#effects-panel .effect-item) #clock-panel {
     }
 
     .drag-preview {
-        outline: 1px solid white;
+        outline: 2px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        border-radius: 4px;
     }
 
     .drag-gap {
@@ -115,6 +117,12 @@ body:has(#effects-panel .effect-item) #clock-panel {
 
     button.ui-control {
         width: unset;
+        transition: box-shadow 0.15s ease, filter 0.15s ease;
+
+        &:hover {
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.12);
+            filter: brightness(1.2);
+        }
     }
 
     .clock-list {
@@ -165,7 +173,8 @@ body:has(#effects-panel .effect-item) #clock-panel {
 
         &.private::before {
             border-color: var(--private-highlight-color);
-            box-shadow: 0 0 3px inset var(--private-highlight-color);
+            box-shadow: 0 0 4px inset var(--private-highlight-color),
+                        0 0 8px var(--private-highlight-color);
         }
     }
 
@@ -315,6 +324,11 @@ body:has(#effects-panel .effect-item) #clock-panel {
             }
         }
 
+        &.private .name {
+            border-color: var(--private-highlight-color);
+            box-shadow: 0 0 3px inset var(--private-highlight-color);
+        }
+
         &:hover .value {
             opacity: 1;
             transition: opacity 0s;
@@ -357,6 +371,16 @@ body:has(#effects-panel .effect-item) #clock-panel {
                 flex: 1;
             }
 
+            .rank-label {
+                order: 3;
+                font-size: 10px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                opacity: 0.5;
+                flex-shrink: 0;
+            }
+
             .tracker-controls {
                 display: none;
                 order: 1;
@@ -381,7 +405,8 @@ body:has(#effects-panel .effect-item) #clock-panel {
 
         &.private .name {
             border-color: var(--private-highlight-color);
-            box-shadow: 0 0 3px inset var(--private-highlight-color);
+            box-shadow: 0 0 4px inset var(--private-highlight-color),
+                        0 0 8px var(--private-highlight-color);
         }
 
         &:hover .progress-element .value {
@@ -394,10 +419,10 @@ body:has(#effects-panel .effect-item) #clock-panel {
 /** Styling for the actual element, separated for reusability */
 #clock-panel {
     .points-element {
-        background: white;
-        border-radius: 25%;
-        border: black 2px solid;
-        color: black;
+        background: var(--control-bg-color);
+        border-radius: 50%;
+        border: 2.5px solid var(--entry-color);
+        color: var(--entry-color);
 
         display: flex;
         flex-direction: column;
@@ -408,10 +433,20 @@ body:has(#effects-panel .effect-item) #clock-panel {
         height: var(--entry-height);
 
         font-family: var(--font-sans);
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 800;
 
         z-index: 1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35),
+                    inset 0 0 12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 14px color-mix(in srgb, var(--entry-color) 60%, transparent),
+                        0 2px 8px rgba(0, 0, 0, 0.35),
+                        inset 0 0 12px rgba(0, 0, 0, 0.2);
+        }
     }
 
     .clock-element {
@@ -426,9 +461,17 @@ body:has(#effects-panel .effect-item) #clock-panel {
         --filled-ratio: calc(var(--filled) / var(--max) * 1turn);
         background: conic-gradient(var(--entry-color) var(--filled-ratio), var(--entry-background) var(--filled-ratio) 1turn);
         border-radius: 50%;
-        border: black var(--spoke-width) solid;
+        border: rgba(0, 0, 0, 0.7) var(--spoke-width) solid;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         position: relative;
+
+        &:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 14px color-mix(in srgb, var(--entry-color) 60%, transparent),
+                        0 2px 8px rgba(0, 0, 0, 0.35);
+        }
 
         .spoke {
             width: var(--spoke-width);
@@ -439,7 +482,7 @@ body:has(#effects-panel .effect-item) #clock-panel {
             top: calc(-0.5 * var(--spoke-width));
             right: calc(50% - var(--spoke-width) / 2);
 
-            background: black;
+            background: rgba(0, 0, 0, 0.75);
             position: absolute;
 
             transform-origin: center bottom;
@@ -456,17 +499,22 @@ body:has(#effects-panel .effect-item) #clock-panel {
         display: flex;
         flex-direction: row;
         align-items: center;
-        justify-content: flex-end; 
+        justify-content: flex-end;
         padding-right: 8px;
         border: 2px solid var(--control-border-color);
         border-radius: 0 0 4px 4px;
         border-top: none;
+        transition: box-shadow 0.2s ease;
+
+        &:hover {
+            box-shadow: 0 0 10px color-mix(in srgb, var(--entry-color) 50%, transparent);
+        }
 
         :where(&) .value {
             font-size: var(--font-size-18);
             font-weight: 600;
             color: white;
-            z-index: 2;  
+            z-index: 2;
             padding: 0px 3px;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 3px;
@@ -477,7 +525,7 @@ body:has(#effects-panel .effect-item) #clock-panel {
         .tracker-slashes {
             position: absolute;
             height: 100%;
-            width: 100%; 
+            width: 100%;
             left: -4px;
             gap: 4px;
             display: flex;
@@ -492,6 +540,7 @@ body:has(#effects-panel .effect-item) #clock-panel {
                 transform: skewX(-15deg);
                 flex-shrink: 0;
                 opacity: 0.2;
+                transition: opacity 0.15s ease;
             }
 
             .slash.filled {
@@ -514,6 +563,11 @@ body:has(#effects-panel .effect-item) #clock-panel {
         border: 2px solid var(--control-border-color);
         border-radius: 0 0 4px 4px;
         border-top: none;
+        transition: box-shadow 0.2s ease;
+
+        &:hover {
+            box-shadow: 0 0 10px color-mix(in srgb, var(--entry-color) 50%, transparent);
+        }
 
         :where(&) .value {
             font-size: var(--font-size-18);

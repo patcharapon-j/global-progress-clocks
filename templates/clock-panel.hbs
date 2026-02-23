@@ -12,6 +12,7 @@
                 >
                     {{#if (eq clock.type "progress")}}
                         <div class="name">
+                            <span class="rank-label">{{clock.rankLabel}}</span>
                             <span class="value">{{clock.name}}</span>
                             {{#if @root.options.editable}}
                                 <div class="tracker-controls">

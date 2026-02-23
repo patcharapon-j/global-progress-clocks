@@ -87,6 +87,7 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                 ticks: Math.clamp(data.value - i * 4, 0, 4),
             })) : [],
             rank: data.rank ?? "dangerous",
+            rankLabel: data.type === "progress" ? (data.rank ?? "dangerous").replace(/^./, (c) => c.toUpperCase()) : null,
             editable: game.user.isGM,
             visible: !data.private || game.user.isGM,
             editable,
@@ -137,6 +138,7 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                     clock.value = clock.value >= clock.max ? 0 : clock.value + 1;
                 }
                 this.db.update(clock);
+                ClockPanel.#pulseElement(event.currentTarget);
             });
 
             clock.addEventListener("contextmenu", (event) => {
@@ -151,6 +153,7 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                     clock.value = clock.value <= 0 ? clock.max : clock.value - 1;
                 }
                 this.db.update(clock);
+                ClockPanel.#pulseElement(event.currentTarget);
             });
         }
 
@@ -173,6 +176,13 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                 },
             });
         }
+    }
+
+    static #pulseElement(el) {
+        gsap.fromTo(el,
+            { filter: "brightness(1.5)" },
+            { filter: "brightness(1)", duration: 0.35, ease: "power2.out" },
+        );
     }
 
     static #onAddClock() {
