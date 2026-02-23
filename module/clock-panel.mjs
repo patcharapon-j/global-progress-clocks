@@ -9,6 +9,7 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
     refresh = foundry.utils.debounce(this.render.bind(this), 100);
     lastRendered = [];
     #sortable = null;
+    #previousValues = new Map();
 
     /**
      *
@@ -124,6 +125,9 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
         // Update the last rendered list (to get ready for next cycle)
         this.lastRendered = rendered;
 
+        // Animate entries whose values changed since last render
+        this.#animateChangedEntries(html);
+
         const elements = [".clock-element", ".points-element", ".tracker-element", ".progress-element"].join(", ");
         for (const clock of html.querySelectorAll(`.clock-entry.editable :where(${elements})`)) {
             clock.addEventListener("click", (event) => {
@@ -138,7 +142,6 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                     clock.value = clock.value >= clock.max ? 0 : clock.value + 1;
                 }
                 this.db.update(clock);
-                ClockPanel.#pulseElement(event.currentTarget);
             });
 
             clock.addEventListener("contextmenu", (event) => {
@@ -153,7 +156,6 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                     clock.value = clock.value <= 0 ? clock.max : clock.value - 1;
                 }
                 this.db.update(clock);
-                ClockPanel.#pulseElement(event.currentTarget);
             });
         }
 
@@ -178,11 +180,74 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
         }
     }
 
-    static #pulseElement(el) {
-        gsap.fromTo(el,
-            { filter: "brightness(1.5)" },
-            { filter: "brightness(1)", duration: 0.35, ease: "power2.out" },
-        );
+    #animateChangedEntries(html) {
+        for (const entryEl of html.querySelectorAll("[data-id]")) {
+            const id = entryEl.dataset.id;
+            const clock = this.db.get(id);
+            if (!clock) continue;
+
+            const value = Math.clamp(clock.value, 0, clock.max);
+            const prevValue = this.#previousValues.get(id);
+            this.#previousValues.set(id, value);
+            if (prevValue === undefined || prevValue === value) continue;
+
+            switch (clock.type) {
+                case "clock": {
+                    // Animate pie chart sweep via --filled CSS variable
+                    // Skip animation for wrap resets (max→0 or 0→max)
+                    const wrapped = (prevValue === clock.max && value === 0) || (prevValue === 0 && value === clock.max);
+                    if (wrapped) break;
+                    const proxy = { filled: prevValue };
+                    gsap.to(proxy, {
+                        filled: value,
+                        duration: 0.4,
+                        ease: "power2.out",
+                        onUpdate: () => entryEl.style.setProperty("--filled", proxy.filled),
+                    });
+                    break;
+                }
+                case "points": {
+                    // Scale pop on the number element
+                    const pointsEl = entryEl.querySelector(".points-element");
+                    if (!pointsEl) break;
+                    gsap.fromTo(pointsEl,
+                        { scale: 1.3 },
+                        { scale: 1, duration: 0.3, ease: "back.out(2)", clearProps: "transform" },
+                    );
+                    break;
+                }
+                case "tracker": {
+                    // Fade in/out changed slashes
+                    const slashes = entryEl.querySelectorAll(".slash");
+                    for (let i = 0; i < slashes.length; i++) {
+                        const wasFilled = i < prevValue;
+                        const isFilled = i < value;
+                        if (wasFilled !== isFilled) {
+                            gsap.fromTo(slashes[i],
+                                { opacity: wasFilled ? 1 : 0.2 },
+                                { opacity: isFilled ? 1 : 0.2, duration: 0.3, ease: "power2.out", clearProps: "opacity" },
+                            );
+                        }
+                    }
+                    break;
+                }
+                case "progress": {
+                    // Flash changed tick boxes
+                    const boxes = entryEl.querySelectorAll(".progress-box");
+                    for (let i = 0; i < boxes.length; i++) {
+                        const oldTicks = Math.clamp(prevValue - i * 4, 0, 4);
+                        const newTicks = Math.clamp(value - i * 4, 0, 4);
+                        if (oldTicks !== newTicks) {
+                            gsap.fromTo(boxes[i],
+                                { filter: "brightness(2)" },
+                                { filter: "brightness(1)", duration: 0.4, ease: "power2.out", clearProps: "filter" },
+                            );
+                        }
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     static #onAddClock() {
