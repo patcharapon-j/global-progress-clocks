@@ -3,7 +3,8 @@
         "Add": {
             "Clock": "Clock",
             "Points": "Points",
-            "Tracker": "Tracker"
+            "Tracker": "Tracker",
+            "Progress": "Progress"
         },
         "CreateDialog": {
             "Color": "Color",
@@ -11,12 +12,22 @@
             "EditTitle": "Edit Clock",
             "EditTitlePoints": "Edit Points",
             "EditTitleTracker": "Edit Tracker",
+            "EditTitleProgress": "Edit Progress Track",
             "Title": "Add Clock",
             "TitlePoints": "Add Points",
             "TitleTracker": "Add Tracker",
+            "TitleProgress": "Add Progress Track",
             "Name": "Name",
             "Value": "Value",
             "Size": "Size",
+            "Rank": "Difficulty Rank",
+            "Ranks": {
+                "troublesome": "Troublesome (3 boxes)",
+                "dangerous": "Dangerous (2 boxes)",
+                "formidable": "Formidable (1 box)",
+                "extreme": "Extreme (2 ticks)",
+                "epic": "Epic (1 tick)"
+            },
             "Private": "Private"
         },
         "DeleteDialog": {
@@ -77,6 +88,10 @@
                     "trackers": {
                         "label": "Enable Trackers",
                         "hint": "Add horizontal trackers as an alternative counter type."
+                    },
+                    "progress": {
+                        "label": "Enable Progress Tracks",
+                        "hint": "Support Ironsworn/Starforged style 10-box progress tracks with difficulty ranks"
                     }
                 }
             }

@@ -1,6 +1,6 @@
 import { ClockDatabase } from "./database.mjs";
 import { ClockAddDialog } from "./dialog.mjs";
-import { MODULE_ID} from "./values.mjs";
+import { MODULE_ID, RANK_TICKS } from "./values.mjs";
 import SortableJS from "./sortable.complete.esm.js";
 
 const fapi = foundry.applications.api;
@@ -30,6 +30,7 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
             addClock: ClockPanel.#onAddClock,
             addTracker: ClockPanel.#onAddTracker,
             addPoints: ClockPanel.#onAddPoints,
+            addProgress: ClockPanel.#onAddProgress,
             editEntry: ClockPanel.#onEditEntry,
             deleteEntry: ClockPanel.#onDeleteEntry,
         },
@@ -82,6 +83,10 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
             color: clockColors.find((c) => c.id === data.colorId)?.color ?? defaultColor,
             spokes: data.max > maxSpokes ? [] : Array(data.max).keys(),
             slashes: data.type === "tracker" ? Array.from({ length: data.max }, (_, i) => ({ filled: i < data.value })) : [],
+            boxes: data.type === "progress" ? Array.from({ length: 10 }, (_, i) => ({
+                ticks: Math.clamp(data.value - i * 4, 0, 4),
+            })) : [],
+            rank: data.rank ?? "dangerous",
             editable: game.user.isGM,
             visible: !data.private || game.user.isGM,
             editable,
@@ -118,14 +123,19 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
         // Update the last rendered list (to get ready for next cycle)
         this.lastRendered = rendered;
 
-        const elements = [".clock-element", ".points-element", ".tracker-element"].join(", ");
+        const elements = [".clock-element", ".points-element", ".tracker-element", ".progress-element"].join(", ");
         for (const clock of html.querySelectorAll(`.clock-entry.editable :where(${elements})`)) {
             clock.addEventListener("click", (event) => {
                 const clockId = event.target.closest("[data-id]").dataset.id;
                 const clock = this.db.get(clockId);
                 if (!clock) return;
 
-                clock.value = clock.value >= clock.max ? 0 : clock.value + 1;
+                if (clock.type === "progress") {
+                    const increment = RANK_TICKS[clock.rank] ?? 4;
+                    clock.value = Math.min(clock.value + increment, clock.max);
+                } else {
+                    clock.value = clock.value >= clock.max ? 0 : clock.value + 1;
+                }
                 this.db.update(clock);
             });
 
@@ -134,7 +144,12 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
                 const clock = this.db.get(clockId);
                 if (!clock) return;
 
-                clock.value = clock.value <= 0 ? clock.max : clock.value - 1;
+                if (clock.type === "progress") {
+                    const decrement = RANK_TICKS[clock.rank] ?? 4;
+                    clock.value = Math.max(clock.value - decrement, 0);
+                } else {
+                    clock.value = clock.value <= 0 ? clock.max : clock.value - 1;
+                }
                 this.db.update(clock);
             });
         }
@@ -176,6 +191,13 @@ export class ClockPanel extends fapi.HandlebarsApplicationMixin(fapi.Application
     static #onAddPoints() {
         new ClockAddDialog({
             type: "points",
+            complete: (data) => this.db.addClock(data),
+        }).render({ force: true });
+    }
+
+    static #onAddProgress() {
+        new ClockAddDialog({
+            type: "progress",
             complete: (data) => this.db.addClock(data),
         }).render({ force: true });
     }

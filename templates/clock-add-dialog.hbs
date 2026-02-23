@@ -30,6 +30,18 @@
                 </div>
             </div>
         {{/if}}
+        {{#if (eq type "progress")}}
+            <div class="form-group">
+                <label>{{localize "GlobalProgressClocks.CreateDialog.Rank"}}</label>
+                <select name="rank">
+                    {{#select entry.rank}}
+                        {{#each progressRanks as |rank|}}
+                            <option value="{{rank}}">{{localize (concat "GlobalProgressClocks.CreateDialog.Ranks." rank)}}</option>
+                        {{/each}}
+                    {{/select}}
+                </select>
+            </div>
+        {{/if}}
         {{#if (eq type "clock")}}
             <div class="form-group">
                 <label>{{localize "GlobalProgressClocks.CreateDialog.Size"}}</label>

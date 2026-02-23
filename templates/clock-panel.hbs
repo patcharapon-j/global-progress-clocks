@@ -10,7 +10,28 @@
                     data-id="{{clock.id}}"
                     style="--max: {{clock.max}}; --filled: {{clock.value}}; --entry-color: {{clock.color}}; --entry-background: {{clock.backgroundColor}}"
                 >
-                    {{#if (eq clock.type "tracker")}}
+                    {{#if (eq clock.type "progress")}}
+                        <div class="name">
+                            <span class="value">{{clock.name}}</span>
+                            {{#if @root.options.editable}}
+                                <div class="tracker-controls">
+                                    <a data-action="deleteEntry"><i class="fa-solid fa-fw fa-trash"></i></a>
+                                    <a data-action="editEntry"><i class="fa-solid fa-fw fa-edit"></i></a>
+                                </div>
+                            {{/if}}
+                        </div>
+                        <div class="progress-element graphic">
+                            <div class="value">{{clock.value}}/{{clock.max}}</div>
+                            <div class="progress-boxes">
+                                {{#each clock.boxes}}
+                                    <div class="progress-box" data-ticks="{{this.ticks}}">
+                                        <div class="tick-v"></div>
+                                        <div class="tick-h"></div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{else if (eq clock.type "tracker")}}
                         <div class="name">
                             <span class="value">{{clock.name}}</span>
                             {{#if @root.options.editable}}
@@ -57,6 +78,11 @@
     {{/if}}
     {{#if @root.options.editable}}
         <div class="main-controls">
+            {{#if @root.enabled.progress}}
+                <button class="ui-control" data-action="addProgress">
+                    <i class="fas fa-plus"></i> {{localize "GlobalProgressClocks.Add.Progress"}}
+                </a>
+            {{/if}}
             {{#if @root.enabled.trackers}}
                 <button class="ui-control" data-action="addTracker">
                     <i class="fas fa-plus"></i> {{localize "GlobalProgressClocks.Add.Tracker"}}

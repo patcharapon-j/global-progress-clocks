@@ -3,6 +3,7 @@ import { MODULE_ID} from "./values.mjs";
 const CLOCK_MAX_SIZE = 32;
 const CLOCK_SIZES = [2, 3, 4, 5, 6, 8, 10, 12];
 const TRACKER_SIZES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const PROGRESS_RANKS = ["troublesome", "dangerous", "formidable", "extreme", "epic"];
 
 const fapi = foundry.applications.api;
 
@@ -37,7 +38,7 @@ export class ClockAddDialog extends fapi.HandlebarsApplicationMixin(fapi.Applica
     get title() {
         const key =
             (this.entry ? "EditTitle" : "Title") +
-            (this.type === "points" ? "Points" : this.type === "tracker" ? "Tracker" : "");
+            (this.type === "points" ? "Points" : this.type === "tracker" ? "Tracker" : this.type === "progress" ? "Progress" : "");
         return game.i18n.localize(`GlobalProgressClocks.CreateDialog.${key}`);
     }
 
@@ -55,6 +56,7 @@ export class ClockAddDialog extends fapi.HandlebarsApplicationMixin(fapi.Applica
             maxSize: CLOCK_MAX_SIZE,
             presetSizes: CLOCK_SIZES,
             trackerSizes: TRACKER_SIZES,
+            progressRanks: PROGRESS_RANKS,
             clockColors: game.settings.get(MODULE_ID, "clockColors"),
             defaultSize: this.entry?.max ?? 4,
         }
@@ -78,8 +80,13 @@ export class ClockAddDialog extends fapi.HandlebarsApplicationMixin(fapi.Applica
 
         const data = formData.object;
         data.type ??= this.type;
-        data.max =
-            this.type === "points" ? 99 : this.type === "tracker" ? Math.min(data.max, 12) : Math.max(data.max, 1);
+        if (this.type === "progress") {
+            data.max = 40;
+            data.rank ??= "dangerous";
+        } else {
+            data.max =
+                this.type === "points" ? 99 : this.type === "tracker" ? Math.min(data.max, 12) : Math.max(data.max, 1);
+        }
         if (this.entry) {
             data.id = this.entry.id;
             data.value = Math.clamp(data.value, 0, data.max);

@@ -73,7 +73,7 @@ body:has(#effects-panel .effect-item) #clock-panel {
 
     /** Flip everything when left aligned */
     &.left {
-        .clock-entry:not(.tracker) {
+        .clock-entry:not(.tracker):not(.progress) {
             flex-direction: row-reverse;
             &::before {
                 border-radius: calc(var(--entry-height) / 2) 4px 4px calc(var(--entry-height) / 2);
@@ -150,7 +150,7 @@ body:has(#effects-panel .effect-item) #clock-panel {
     min-width: var(--entry-width);
     max-width: var(--max-entry-width);
 
-    &:not(.tracker) {
+    &:not(.tracker):not(.progress) {
         &::before {
             content: " ";
             position: absolute;
@@ -320,6 +320,75 @@ body:has(#effects-panel .effect-item) #clock-panel {
             transition: opacity 0s;
         }
     }
+
+    &.progress {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+        width: 100%;
+        justify-content: flex-end;
+        height: unset;
+
+        .name {
+            align-items: center;
+            align-self: center;
+            background: var(--control-bg-color);
+            border-radius: 4px 4px 0 0;
+            border: 1px solid var(--control-border-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: var(--control-icon-color);
+            display: flex;
+            font-size: 14px;
+            gap: 8px;
+            justify-content: space-between;
+            max-width: none;
+            padding: 0 8px;
+            position: relative;
+            white-space: nowrap;
+            width: 100%;
+            flex: 1 0 1.5rem;
+
+            .value {
+                order: 2;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: right;
+                flex: 1;
+            }
+
+            .tracker-controls {
+                display: none;
+                order: 1;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 1px;
+                border-radius: inherit;
+                flex-shrink: 0;
+                font-size: 0.85em;
+
+                a {
+                    color: white;
+                    cursor: pointer;
+                }
+            }
+
+            &:hover .tracker-controls {
+                display: flex;
+            }
+        }
+
+        &.private .name {
+            border-color: var(--private-highlight-color);
+            box-shadow: 0 0 3px inset var(--private-highlight-color);
+        }
+
+        &:hover .progress-element .value {
+            opacity: 1;
+            transition: opacity 0s;
+        }
+    }
 }
 
 /** Styling for the actual element, separated for reusability */
@@ -427,6 +496,135 @@ body:has(#effects-panel .effect-item) #clock-panel {
 
             .slash.filled {
                 opacity: 1;
+            }
+        }
+    }
+
+    .progress-element {
+        background: var(--entry-background);
+        overflow: hidden;
+        flex: 1 0 2rem;
+        width: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 8px;
+        border: 2px solid var(--control-border-color);
+        border-radius: 0 0 4px 4px;
+        border-top: none;
+
+        :where(&) .value {
+            font-size: var(--font-size-18);
+            font-weight: 600;
+            color: white;
+            z-index: 2;
+            padding: 0px 3px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-boxes {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            left: 0;
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: center;
+            gap: 2px;
+            padding: 3px 4px;
+            pointer-events: none;
+
+            .progress-box {
+                --tick-color: var(--entry-color);
+                --tick-thickness: 2px;
+
+                flex: 1 1 0;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 2px;
+                position: relative;
+                overflow: hidden;
+
+                .tick-v,
+                .tick-h {
+                    position: absolute;
+                    background: var(--tick-color);
+                    display: none;
+                }
+
+                .tick-v {
+                    width: var(--tick-thickness);
+                    height: 100%;
+                    top: 0;
+                    left: calc(50% - var(--tick-thickness) / 2);
+                }
+
+                .tick-h {
+                    height: var(--tick-thickness);
+                    width: 100%;
+                    top: calc(50% - var(--tick-thickness) / 2);
+                    left: 0;
+                }
+
+                &::before,
+                &::after {
+                    content: "";
+                    position: absolute;
+                    width: var(--tick-thickness);
+                    height: 141%;
+                    top: -20.5%;
+                    left: calc(50% - var(--tick-thickness) / 2);
+                    background: var(--tick-color);
+                    display: none;
+                }
+
+                &::before {
+                    transform: rotate(-45deg);
+                }
+
+                &::after {
+                    transform: rotate(45deg);
+                }
+
+                /* 1 tick: single diagonal / */
+                &[data-ticks="1"]::before {
+                    display: block;
+                }
+
+                /* 2 ticks: X (both diagonals) */
+                &[data-ticks="2"]::before,
+                &[data-ticks="2"]::after {
+                    display: block;
+                }
+
+                /* 3 ticks: X + vertical bar */
+                &[data-ticks="3"]::before,
+                &[data-ticks="3"]::after {
+                    display: block;
+                }
+                &[data-ticks="3"] .tick-v {
+                    display: block;
+                }
+
+                /* 4 ticks: full star (X + vertical + horizontal) */
+                &[data-ticks="4"]::before,
+                &[data-ticks="4"]::after {
+                    display: block;
+                }
+                &[data-ticks="4"] .tick-v,
+                &[data-ticks="4"] .tick-h {
+                    display: block;
+                }
+
+                /* Filled boxes get a subtle background highlight */
+                &:not([data-ticks="0"]) {
+                    background: rgba(255, 255, 255, 0.08);
+                }
             }
         }
     }

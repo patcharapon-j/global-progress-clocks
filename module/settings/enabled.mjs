@@ -72,11 +72,17 @@ class EnabledTypes extends foundry.abstract.DataModel {
                 label: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.points.label",
                 hint: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.points.hint",
             }),
-            trackers: new fields.BooleanField({ 
-                nullable: false, 
+            trackers: new fields.BooleanField({
+                nullable: false,
                 initial: false,
                 label: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.trackers.label",
                 hint: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.trackers.hint",
+            }),
+            progress: new fields.BooleanField({
+                nullable: false,
+                initial: false,
+                label: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.progress.label",
+                hint: "GlobalProgressClocks.Settings.enabledTypes.FIELDS.progress.hint",
             }),
         }
     }
